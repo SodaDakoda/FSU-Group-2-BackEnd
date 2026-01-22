@@ -16,17 +16,21 @@ router.post("/register", async (req, res, next) => {
 
     const { rows } = await db.query(
       `
-      INSERT INTO admins (email, password_hash)
-      VALUES ($1, $2)
-      RETURNING id, email
+      INSERT INTO users (email, password_hash, role)
+      VALUES ($1, $2, 'administrator')
+      RETURNING user_id as id, email, role
       `,
       [email.toLowerCase(), hash],
     );
 
-    const admin = rows[0];
-    const token = createToken({ adminId: admin.id, email: admin.email });
+    const user = rows[0];
+    const token = createToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
 
-    res.status(201).json({ admin, token });
+    res.status(201).json({ user, token });
   } catch (err) {
     if (err.code === "23505") {
       return res.status(409).json({ error: "Email already exists" });
@@ -40,19 +44,27 @@ router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const { rows } = await db.query(`SELECT * FROM admins WHERE email = $1`, [
-      email.toLowerCase(),
-    ]);
+    const { rows } = await db.query(
+      `SELECT * FROM users WHERE email = $1 AND role = 'administrator'`,
+      [email.toLowerCase()],
+    );
 
-    const admin = rows[0];
-    if (!admin) return res.status(401).json({ error: "Invalid credentials" });
+    const user = rows[0];
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
-    const ok = await bcrypt.compare(password, admin.password_hash);
+    const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = createToken({ adminId: admin.id, email: admin.email });
+    const token = createToken({
+      userId: user.user_id,
+      email: user.email,
+      role: user.role,
+    });
 
-    res.json({ admin: { id: admin.id, email: admin.email }, token });
+    res.json({
+      user: { id: user.user_id, email: user.email, role: user.role },
+      token,
+    });
   } catch (err) {
     next(err);
   }

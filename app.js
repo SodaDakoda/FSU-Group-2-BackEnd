@@ -6,6 +6,7 @@ import cors from "cors";
 import adminRoutes from "./routes/admin.js";
 import departmentRoutes from "./routes/departments.js";
 import facultyRoutes from "./routes/faculty.js";
+import usersRoutes from "./routes/users.js";
 
 const app = express();
 export default app;
@@ -21,9 +22,10 @@ app.get("/", (req, res) => {
 });
 
 // route mounting
-app.use("/api/admin", adminRoutes);
-app.use("/api/departments", departmentRoutes);
-app.use("/api/faculty", facultyRoutes);
+app.use("/admin", adminRoutes);
+app.use("/departments", departmentRoutes);
+app.use("/faculty", facultyRoutes);
+app.use("/users", usersRoutes);
 
 // 404
 app.use((req, res) => {
