@@ -23,8 +23,8 @@ app.get("/", (req, res) => {
 
 // route mounting
 app.use("/admin", adminRoutes);
-app.use("/departments", departmentRoutes);
-app.use("/faculty", facultyRoutes);
+app.use("/api/departments", departmentRoutes);
+app.use("/api/faculty", facultyRoutes);
 app.use("/users", usersRoutes);
 
 // 404
